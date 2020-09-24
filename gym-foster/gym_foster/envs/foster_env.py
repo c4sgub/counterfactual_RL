@@ -19,13 +19,17 @@ class FosterEnv(gym.Env):
         self.reward = 0 
         ## Sample reunificaiton rate for the youth. The race could potentially
         ## influence the distirbution of reunification rate. 
-        self.reunification_rate =  0.5  
+#         self.reunification_rate =  0.5
+        if self.race == 'major':
+            self.reunification_rate =  0.5
+        else:
+            self.reunification_rate = 0.3
         ## TODO: Sample more features using generative model. 
     def step(self,action):
         if action == 'a_LTFC':
             self.casegoal = 'LTFC'
             self.age +=1 
-            self.reward += 0.1
+            reward = 0.1
             if self.age == 19:
                 self.status = 'out'
             else:
@@ -34,16 +38,17 @@ class FosterEnv(gym.Env):
             self.casegoal = 'R'
             self.age +=1 
             reunion = np.random.binomial(1,self.reunification_rate,1)[0]
-            print(reunion)
             if reunion == 1: 
                 self.status = 'out'
-                self.reward += 1 
+                reward = 1
             else:
                 if self.age == 19:
                     self.status = 'out'
+                    reward = 0
                 else:
                     self.status = 'in'
-        return [self.casegoal,self.age,self.reward,self.status]
+                    reward = 0 
+        return [self.casegoal,self.age,self.race,reward,self.status]
             
     def reset(self):
         self.n_service = 0
@@ -55,7 +60,10 @@ class FosterEnv(gym.Env):
         self.status = 'in'
         self.casegoal = 'Empty'
         self.reward = 0
-        self.reunification_rate =  0.5
+        if self.race == 'major':
+            self.reunification_rate =  0.5
+        else:
+            self.reunification_rate = 0.3
 
     def render(self,mode='human',close=False):
         print('The status of the youth is: {}'.format(self.status))
